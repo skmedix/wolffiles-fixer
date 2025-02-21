@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Wolffiles Fixer
 // @namespace    https://github.com/skmedix/wolffiles-fixer
-// @version      1.0.0
-// @description  Fixes various issues with wolffiles.de, primarily removing www. from URLs to prevent loading issues
+// @version      1.1.0
+// @description  Fixes various issues with wolffiles.de, primarily removing www. from URLs and improving map previews
 // @author       skmedix
 // @homepage     https://github.com/skmedix/wolffiles-fixer
 // @supportURL   https://github.com/skmedix/wolffiles-fixer/issues
@@ -25,6 +25,40 @@
         );
         window.location.replace(newUrl);
         return;
+    }
+
+    function showMapPreviews() {
+        // Find all links with onmouseover that changes an image
+        document.querySelectorAll('a[onmouseover*="bild"]').forEach((link) => {
+            // Get the mouseover attribute
+            const mouseoverAttr = link.getAttribute("onmouseover");
+            if (!mouseoverAttr) {
+                return;
+            }
+
+            // Extract image details using more precise regex
+            const matches = mouseoverAttr.match(
+                /document\.([^.]+)\.src='([^']+)',document\.([^.]+)\.width='(\d+)'/,
+            );
+            if (!matches) {
+                return;
+            }
+
+            const [, imgName, imgSrc, , imgWidth] = matches;
+
+            const img = document.querySelector(`img[name="${imgName}"]`);
+            if (!img) {
+                return;
+            }
+
+            img.src = imgSrc;
+            img.width = parseInt(imgWidth);
+            img.style.display = "block";
+            img.style.marginTop = "5px";
+
+            link.removeAttribute("onmouseover");
+            link.removeAttribute("onmouseout");
+        });
     }
 
     let tabInitScripts = [];
@@ -121,6 +155,8 @@
         document.querySelectorAll("script:not([src])").forEach((script) => {
             handleTabScript(script);
         });
+
+        setTimeout(showMapPreviews, 100);
 
         isProcessing = false;
     }
