@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wolffiles Fixer
 // @namespace    https://github.com/skmedix/wolffiles-fixer
-// @version      1.1.0
+// @version      1.1.1
 // @description  Fixes various issues with wolffiles.de, primarily removing www. from URLs and improving map previews
 // @author       skmedix
 // @homepage     https://github.com/skmedix/wolffiles-fixer
@@ -132,6 +132,11 @@
             return;
         }
         isProcessing = true;
+
+        // Fix form action URLs
+        document.querySelectorAll('form[action*="www.wolffiles.de"]').forEach((form) => {
+            form.action = form.action.replace("www.wolffiles.de", "wolffiles.de");
+        });
 
         document
             .querySelectorAll('*[background*="wolffiles.de"]')
